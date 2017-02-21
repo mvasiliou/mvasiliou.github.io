@@ -86,6 +86,7 @@ $(document).ready(function(){
               .attr("r", shapeDict['r'])
               .attr("width", shapeDict['width'])
               .attr("height", shapeDict['height'])
+              .attr('style', shapeDict['style'])
               .classed("shape", true)
     setCoords(shape, parseInt(shapeDict['diffX']), parseInt(shapeDict['diffY']));
     //Add Event Listeners
@@ -213,8 +214,7 @@ function removeSelected(){
 //Deletes all shapes from the board
 function clearShapes() {
     numShapes = 0;
-    d3.selectAll("circle").remove();
-    d3.selectAll("rect").remove();
+    d3.selectAll("g").remove();
 }
 
 //Selects the clicked shape
