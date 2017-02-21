@@ -1,0 +1,52 @@
+html, body {
+    margin: 0;
+    height: 100%;
+}
+
+.container {
+    height: inherit;
+}
+
+#box {
+    -moz-box-sizing:border-box;
+    -webkit-box-sizing:border-box;
+    box-sizing:border-box;
+    margin: auto;
+    height: 80%;
+}
+
+.rectangle {
+    border: 1px solid black;
+}
+
+#palette {
+    border-radius: 50%;
+    height: 45px;
+    width: 45px;
+    border: 1px solid black;
+}
+
+.circle {
+    border: 1px solid black;
+    border-radius: 50%;
+}
+
+.buttons {
+    margin: auto;
+    padding: 1% 1% 1% 1%;
+    margin-bottom: 1%;
+    font-family: 'Oswald', sans-serif;
+}
+.shape {
+    stroke: black;
+    stroke-width: 2px;
+}
+.selected-shape {
+    stroke: black;
+    stroke-width: 5px;
+}
+
+.highlighted {
+    stroke: blue;
+    stroke-width: 5px;
+}
