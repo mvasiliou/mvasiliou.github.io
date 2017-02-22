@@ -26,6 +26,7 @@ function mouseMoveCanvas() {
 function mouseDownShape(event) {
     d3.event.preventDefault();
     d3.event.stopPropagation();
+    stopShape();
     //Only want to fire if this is a left click
     if (d3.event.button === 0) {
         var shape = d3.select(this);
