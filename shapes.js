@@ -14,11 +14,11 @@ $(document).ready(function(){
     //Make an SVG Container
     d3.select("#box").append("svg")
       .attr("width", width)
-                                .attr("height", height)
-                                .style("border", "1px solid black")
-                                .on("mousedown", mouseDownCanvas)
-                                .on("mouseup", stopShape)
-                                .on("mousemove", mouseMoveCanvas);
+      .attr("height", height)
+      .style("border", "1px solid black")
+      .on("mousedown", mouseDownCanvas)
+      .on("mouseup", stopShape)
+      .on("mousemove", mouseMoveCanvas);
     setPalette();
 });
 
