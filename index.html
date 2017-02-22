@@ -5,33 +5,36 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Home</title>
-        <link href='shapes.css' rel="stylesheet">
+        <title>Shapes</title>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css" integrity="sha384-y3tfxAZXuh4HwSYylfB+J125MxIs6mR5FOHamPBG064zB+AFeWH94NdvaCBm8qnd" crossorigin="anonymous">
+        <link href='shapes.css' rel="stylesheet">
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
         <script src="https://d3js.org/d3.v3.min.js"></script>
     </head>
     <body>
         <div class='container'>
             <div id = 'box'>    
-                
-                <script src="shapes.js"></script>
             </div>
-            <div class = 'row'>
-            <form class = 'form-inline'>
-                <h1 class = 'btn btn-success' value="circle" id = 'toggle-circle' onclick="toggleShape(event)">Circles</h1>
-                <h1 class = 'btn btn-success' value="rect" id = 'toggle-rect' onclick="toggleShape(event)">Rectangles</h1>
-                <h1 class = 'btn btn-danger' id = 'remove' onclick="removeSelected()">Remove</h1>
-                <h1 class = 'btn btn-primary' id = 'clear' onclick="clearShapes()">Clear</h1>
-                <input type="text" id="layout-title">
-                <h1 class = 'btn btn-primary' id = 'save'>Save</h1>
-                <select id="layouts" ></select>
-                <h1 class = 'btn btn-primary' id = 'choose' onclick="chooseLayout()">Choose Layout</h1>
-                <h1 class = 'btn btn-primary' id = 'delete' onclick="deleteLayouts()">Delete Layouts</h1>
-            </form>    
+            <div class = 'row settings-row'>
+                <a class = 'settings btn btn-success col-md-1' value="rect" id = 'toggle' onclick="toggleShape(event)">Boxes</a>
+                <a class = 'btn btn-danger' id = 'remove' onclick="removeSelected()">Remove</a>
+                <a class = 'settings btn btn-danger col-md-1' id = 'clear' onclick="clearShapes()">Clear All</a>
+                <div id="palette" class="settings col-md-1"></div>
+                <div class="col-md-2 settings">
+                R: <input class="" style="display: initial;" type="range" min="0" max="255" value="255" id="red" oninput="setPalette()">
+                G: <input class="" style="display: initial;" type="range" min="0" max="255" value="0" id="green" oninput="setPalette()">
+                B: <input class="" style="display: initial;" type="range" min="0" max="255" value="0" id="blue" oninput="setPalette()">
+                </div>
+                <select id="layouts" class='col-md-2 settings'></select>
+                <a class = 'btn btn-primary col-md-1 settings' id = 'choose' onclick="chooseLayout()">Choose</a>
+                <a class = 'btn btn-primary col-md-1 settings' id = 'save' onclick="saveLayout()">Save</a>
+                <a class = 'btn btn-danger col-md-1 settings' id = 'delete' onclick="deleteLayout()">Delete</a>
             </div>
             <div class ='row row-margin'>
                 <p></p>
             </div>
         </div>
+        <script src="shapes.js"></script>
+        <script src="layout.js"></script>
+        <script src="events.js"></script>
     </body>

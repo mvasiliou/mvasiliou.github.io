@@ -5,7 +5,10 @@ $(document).ready(function(){
       mouseX = 0;
       mouseY = 0;
       radius = 10;
-      shapeType = "rect"
+      shapeType = "rect";
+      mouseX, mouseY
+      selectedShape = null
+      interval = null;
   
     //Make an SVG Container
     var svg = d3.select("#box").append("svg")
@@ -14,113 +17,10 @@ $(document).ready(function(){
                                 .style("border", "1px solid black")
                                 .on("mousedown", mouseDownCanvas)
                                 .on("mouseup", stopShape)
-                                .on("mousemove", mouseMoveCanvas)
+                                .on("mousemove", mouseMoveCanvas);
+    setPalette()
+});
 
-    
-
-    // Retrieve the object from storage
-    var layoutList = setLayoutList();
-    reloadLayoutSelect();
-
-    $("#save").on('click', saveLayout)
-    $('#delete').on('click', deleteLayouts)
-
-    function saveLayout() {
-        var shapes = d3.selectAll(".shape")[0];
-        var shapeList = []
-        for (var i = shapes.length - 1; i >= 0; i--) {
-            var shape = d3.select(shapes[i])
-            var shapeDict = {}
-            shapeDict['id'] = shape.attr("id");
-            shapeDict['diffX'] = shape.attr("diffX")
-            shapeDict['diffY'] = shape.attr("diffY")
-            shapeDict['r'] = shape.attr('r')
-            shapeDict['width'] = shape.attr('width')
-            shapeDict['height'] = shape.attr('height')
-            shapeDict['style'] = shape.attr('style')
-            shapeDict['rect'] = shape.classed('rect')
-            shapeList.push(shapeDict)
-        }
-        layout = {'title': $('#layout-title').val(),'data':shapeList, 'id': layoutList.length}
-        layoutList.push(layout)
-
-        // Put the object into storage
-        localStorage.setItem('layoutList', JSON.stringify(layoutList));
-        reloadLayoutSelect();
-
-    }
-  });
-  function chooseLayout() {
-    layoutId = $('select').val();
-    for (var i = layoutList.length - 1; i >= 0; i--) {
-        if(layoutList[i]['id'] == layoutId) {
-            loadLayout(layoutList[i])
-        }
-    }
-  }
-
-  function loadLayout(layout) {
-    clearShapes();
-    var shapes = layout['data'];
-    for (var i = shapes.length - 1; i >= 0; i--) {
-        loadShape(shapes[i]);
-    }
-  }
-
-  function loadShape(shapeDict){
-    //Draw the Circle
-    var group = d3.select("svg").append("g").attr("id", "group"+numShapes);
-    var shape;
-    if (shapeDict['rect']) {
-        shape = group.append('rect')
-                     .classed('rect', true)
-    }
-    else {
-        shape = group.append('circle')
-                     .classed('circle', true)
-
-    }
-         shape.attr("id", shapeDict['id'])
-              .attr("diffX",shapeDict['diffX'])
-              .attr("diffY",shapeDict['diffY'])
-              .attr("r", shapeDict['r'])
-              .attr("width", shapeDict['width'])
-              .attr("height", shapeDict['height'])
-              .attr('style', shapeDict['style'])
-              .classed("shape", true)
-    setCoords(shape, parseInt(shapeDict['diffX']), parseInt(shapeDict['diffY']));
-    //Add Event Listeners
-    shape.on('mousedown', mouseDownShape);
-    shape.on('dblclick', dblClickShape)
-         .on("mouseup", stopShape)
-        
-    numShapes++;
-}
-
-  function deleteLayouts() {
-    layoutList = []
-    localStorage.setItem('layoutList', JSON.stringify(layoutList));
-    reloadLayoutSelect();
-  }
-
-  function setLayoutList() {
-    layoutList = JSON.parse(localStorage.getItem('layoutList'));
-    if (!layoutList) {
-        layoutList = [] 
-    }
-    return layoutList;
-  }
-
-  function reloadLayoutSelect() {
-    $('select option').each(function() {
-        $(this).remove();
-    });
-
-    layoutList = setLayoutList();
-    for (var i = layoutList.length - 1; i >= 0; i--) {
-        $('select').append($('<option>', {value:layoutList[i]['id'], text: layoutList[i]['title']}));
-    }
-  }
 
 //Draw a new shape on the canvas
 function newShape(x, y){
@@ -179,19 +79,26 @@ function setCoords(shape, x, y) {
     var group = d3.select("#group" + shape.attr('id'));
     group.attr("transform", "translate("+(x)+','+(y)+")");
     shape.attr("diffX", x)
-    shape.attr("diffY", y)
+         .attr("diffY", y)
 }
 
 //Sets the color to the RGB sliders on the given shape 
 function setColor(shape) {
-    var red = 200;
-    var green = 0;
-    var blue = 0;
-    shape.style("fill", 'rgb('+red+','+green+','+blue+')');
+    var red = $('#red').val();
+    var green = $('#green').val();
+    var blue = $('#blue').val();
+    var rgb = 'rgb('+red+','+green+','+blue+')'
+    try {
+        shape.style("fill", rgb);
+    }
+    catch (err) {
+        shape.setAttribute('style',"background-color: " + rgb)
+    }
 }
 
 //Sets the shape to the mouse movement until mouseup
 function moveShape(shape) {
+    selectShape(shape)
     //This is the current position of the mouse. We move the shape relative to movement from this point
     var startX = mouseX - shape.attr('diffX');
     var startY = mouseY - shape.attr('diffY');
@@ -206,9 +113,11 @@ function moveShape(shape) {
 /*************BUTTONS AND HOVERS******************************/
 //Deletes the currently selected object
 function removeSelected(){
+    d3.select('#group' + selectedShape.attr('id')).remove()
+}
 
-    var groupId = '#group' + selectedShape.attr('id')
-    d3.select(groupId).remove()
+function removeShape(shape) {
+    d3.select('#group' + shape.attr('id')).remove();
 }
 
 //Deletes all shapes from the board
@@ -222,11 +131,12 @@ function selectShape(shape) {
     deselectShape();
     shape.classed("selected-shape", true);
     selectedShape = shape;
-    addPull(shape, "tl", 0,0);
-    addPull(shape, "tr", shape.attr('width'), 0);
-    addPull(shape, "bl",0,shape.attr('height'));
-    addPull(shape,"br",shape.attr('width'),shape.attr('height'));
+    addPull(shape, true,true);
+    addPull(shape, false, true);
+    addPull(shape, true,false);
+    addPull(shape,false,false);
 }
+
 //Deselects currently selected shape
 function deselectShape() {
     if (selectedShape !== null) {
@@ -244,147 +154,91 @@ function setPalette() {
     }
 }
 
-function addPull(shape, id, x, y) {
+function addPull(shape, left, top) {
     var r = parseInt(shape.attr("r"))
     
     var groupId = '#group' + shape.attr('id')
     pull = d3.select(groupId).append('circle')
              .attr("r", 10)
-             .attr("id", id)
-             .attr('cx',x)
-             .attr('cy',y)
              .style("fill","blue")
+             .style("stroke","black")
+             .style("stroke-width",2)
              .classed("pull", true);
+    if (left) {pull.classed("left", true)};
+    if (top) {pull.classed("top", true)};
+    setPullCoords(shape, pull)
     pull.on('mouseover', stopEvent);
     pull.on('mousedown', mouseDownPull);
-    pull.on('mouseup', mouseUpPull);
+    pull.on('mouseup', stopShape);
 }
 
 function setPullCoords(shape, pull) {
     var x,y = x = 0;
-    var id = pull.attr('id')
-    if (id == 'tr') {
+    if (!pull.classed("left")) {
         x = shape.attr('width')
     }
-    else if (id == 'bl') {
+    if (!pull.classed("top")) {
         y = shape.attr('height')
     }
-
-    else if (id == 'br') {
-        x = shape.attr('width')
-        y = shape.attr('height')
+    if (shape.classed('circle')) {
+        x = shape.attr('r')*Math.cos(Math.PI / 4)
+        y = shape.attr('r')*Math.sin(Math.PI / 4)
+        if(pull.classed("top")) {y = -y};
+        if(pull.classed("left")) {x = -x}
     }
 
     pull.attr('cx',x)
         .attr('cy',y)
 }
 
-/*************EVENT LISTENERS*********************/
-function mouseDownCanvas() {
-    if (d3.event.button === 0) {
-        var coords = d3.mouse(this);
-        var x = parseInt(coords[0])
-        var y = parseInt(coords[1])
-        newShape(x, y);
-        }
-}
-
-function mouseMoveCanvas() {
-    mouseX = d3.mouse(this)[0];
-    mouseY = d3.mouse(this)[1];
-}
-
-function mouseUpNewShape(event) {
-    stopShape();
-}
-
-function mouseUpPull(event) {
-    stopShape();    
-}
-
-function stopEvent (event){
-    d3.event.stopPropagation();
-}
-
-function mouseDownShape(event) {
-    if (d3.event.button === 0) {
-        d3.event.stopPropagation();
-        var shape = d3.select(this);
-        moveShape(shape);
-    }
-}
-
-function dblClickShape(event) {
-    d3.event.stopPropagation();
-    var shape = d3.select(this);
-    if (shape.classed("selected-shape")) {
-        deselectShape()
-    }
-    else {
-        selectShape(shape);   
-    }
-}
-
-function mouseDownPull(event) {
-    d3.event.stopPropagation();
-    group = d3.select(this.parentNode)
+function resizeShape(group, pull) {
     group.on('mouseup', stopShape);
     group.on('mousedown', stopShape)
     var shape = group.select('.shape');
     var mouseStartX = mouseX;
     var mouseStartY = mouseY;
-    var pullId = d3.select(this).attr("id")
+    var pullId = pull.attr("id")
 
     var diffX = parseInt(shape.attr("diffX"));
     var diffY = parseInt(shape.attr("diffY"));
+    var r     = parseInt(shape.attr("r"));
 
     var width = parseInt(shape.attr("width"));
     var height = parseInt(shape.attr("height"));
 
     interval = setInterval(function() {
-        var widthDiff = 0;
-        var heightDiff = 0;
-        if (pullId == "tr") {
-            widthDiff = mouseX - mouseStartX;
+        var newX = diffX;
+        var newY = diffY;
+        var newR = r;
+        var widthDiff = mouseX - mouseStartX;
+        var heightDiff = mouseY - mouseStartY;
+        if(pull.classed("top")) {
             heightDiff = mouseStartY - mouseY;
-            setCoords(shape, diffX, diffY - heightDiff);
+            newY = diffY - heightDiff
         }
-        else if (pullId == "tl") {
+        if (pull.classed("left")) {
             widthDiff = mouseStartX - mouseX;
-            heightDiff = mouseStartY - mouseY;
-            setCoords(shape, diffX - widthDiff, diffY - heightDiff);
+            newX = diffX - widthDiff;
         }
-        else if (pullId == "bl") {
-            widthDiff = mouseStartX - mouseX;
-            heightDiff = mouseY - mouseStartY;
-            setCoords(shape, diffX - widthDiff, diffY);
+        if (shape.classed("rect")) {
+            setCoords(shape, newX, newY);
         }
+        rDiff = (heightDiff + widthDiff)
+        newR = r + rDiff
+        if(newR <= 0) {newR = 1}
+        shape.attr("r", newR)
 
-        else {
-            widthDiff = mouseX - mouseStartX;
-            heightDiff = mouseY - mouseStartY;
-        }
         pulls = group.selectAll(".pull")[0];
         for (var i = pulls.length - 1; i >= 0; i--) {
             setPullCoords(shape,d3.select(pulls[i]))
         }
+        newWidth = widthDiff + width
+        if (newWidth <= 0){ newWidth = 1};
+        newHeight = heightDiff + height;
+        if (newHeight <= 0) {newHeight = 1} 
 
-        shape.attr("width", widthDiff + width);
-        shape.attr("height", heightDiff + height);
-        shape.attr("r", heightDiff + height)
-    }, 1);
+        shape.attr("width", newWidth);
+        shape.attr("height", newHeight);
+        
+    }, .01);
 }
-
-function mouseOverPull() {
-    d3.event.target()
-}
-
-function toggleShape(event) {
-    shapeType = event.target.getAttribute('value');
-}
-
-
-
-var mouseX, mouseY
-var selectedShape = null;
-var interval = null;

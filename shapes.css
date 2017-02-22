@@ -11,12 +11,8 @@ html, body {
     -moz-box-sizing:border-box;
     -webkit-box-sizing:border-box;
     box-sizing:border-box;
-    margin: auto;
+    margin: 1% auto;
     height: 80%;
-}
-
-.rectangle {
-    border: 1px solid black;
 }
 
 #palette {
@@ -26,27 +22,23 @@ html, body {
     border: 1px solid black;
 }
 
-.circle {
-    border: 1px solid black;
-    border-radius: 50%;
-}
-
-.buttons {
-    margin: auto;
-    padding: 1% 1% 1% 1%;
-    margin-bottom: 1%;
+.settings-row {
+    margin:0 auto;
     font-family: 'Oswald', sans-serif;
 }
+
+
+.settings {
+    float:none;
+    display:inline-block;
+    vertical-align:middle;
+    margin: 0% .1%;    
+}
+
 .shape {
     stroke: black;
     stroke-width: 2px;
 }
 .selected-shape {
-    stroke: black;
-    stroke-width: 5px;
-}
-
-.highlighted {
-    stroke: blue;
     stroke-width: 5px;
 }
