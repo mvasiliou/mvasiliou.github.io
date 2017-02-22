@@ -50,7 +50,7 @@ function loadLayout(layout) {
 
 function loadShape(shapeDict){
   //Draw the Circle
-  var group = d3.select("svg").append("g").attr("id", "group"+numShapes);
+  var group = d3.select("svg").append("g").attr("id", "group"+shapeDict['id']);
   var shape;
   if (shapeDict['rect']) {
       shape = group.append('rect')
