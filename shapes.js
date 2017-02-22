@@ -17,7 +17,6 @@ $(document).ready(function(){
                                 .attr("height", height)
                                 .style("border", "1px solid black")
                                 .on("mousedown", mouseDownCanvas)
-                                .on("mouseout", stopShape)
                                 .on("mouseup", stopShape)
                                 .on("mousemove", mouseMoveCanvas);
     setPalette();
