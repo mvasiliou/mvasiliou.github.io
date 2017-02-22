@@ -76,9 +76,7 @@ function loadShape(shapeDict){
             .classed("shape", true);
   setCoords(shape, parseInt(shapeDict.diffX), parseInt(shapeDict.diffY));
   //Add Event Listeners
-  shape.on('mousedown', mouseDownShape);
-  shape.on('dblclick', dblClickShape)
-       .on("mouseup", stopShape);
+  addEventListeners(shape);
       
   numShapes = parseInt(shapeDict.id);
   numShapes++;

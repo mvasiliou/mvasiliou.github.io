@@ -17,6 +17,7 @@ $(document).ready(function(){
                                 .attr("height", height)
                                 .style("border", "1px solid black")
                                 .on("mousedown", mouseDownCanvas)
+                                .on("mouseout", stopShape)
                                 .on("mouseup", stopShape)
                                 .on("mousemove", mouseMoveCanvas);
     setPalette();
@@ -39,15 +40,18 @@ function newShape(x, y){
 
     //Set color based on the current palette
     setColor(shape);
-
-    //Add Event Listeners
-    shape.on('mousedown', mouseDownShape);
-    shape.on('dblclick', dblClickShape)
-         .on("mouseup", stopShape);
+    addEventListeners(shape);
     
     //Place the shape on the canvas around the mouse tip
     growShape(shape, x, y);
     numShapes++;
+}
+
+function addEventListeners(shape) {
+    //Add Event Listeners
+    shape.on('mousedown', mouseDownShape)
+         .on('dblclick', dblClickShape)
+         .on("mouseup", stopShape);
 }
 
 //Grow the new shape. Continues until interval cancelled
