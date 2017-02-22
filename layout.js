@@ -80,6 +80,7 @@ function loadShape(shapeDict){
   shape.on('dblclick', dblClickShape)
        .on("mouseup", stopShape);
       
+  numShapes = parseInt(shapeDict.id);
   numShapes++;
 }
 
