@@ -113,8 +113,10 @@ function moveShape(shape) {
 /*************BUTTONS AND HOVERS******************************/
 //Deletes the currently selected shape and group
 function removeSelected(){
-    d3.select('#group' + selectedShape.attr('id')).remove();
-    selectedShape = null;
+    if (selectedShape !== null) {
+        d3.select('#group' + selectedShape.attr('id')).remove();
+        selectedShape = null;
+    }
 }
 
 //Removes the given shape and group
