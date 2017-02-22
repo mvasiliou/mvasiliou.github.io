@@ -6,25 +6,26 @@ $(document).ready(function(){
       mouseY = 0;
       radius = 10;
       shapeType = "rect";
-      mouseX, mouseY
-      selectedShape = null
+      mouseX = null;
+        mouseY = null;
+      selectedShape = null;
       interval = null;
   
     //Make an SVG Container
-    var svg = d3.select("#box").append("svg")
-                                .attr("width", width)
+    d3.select("#box").append("svg")
+      .attr("width", width)
                                 .attr("height", height)
                                 .style("border", "1px solid black")
                                 .on("mousedown", mouseDownCanvas)
                                 .on("mouseup", stopShape)
                                 .on("mousemove", mouseMoveCanvas);
-    setPalette()
+    setPalette();
 });
 
 
 //Draw a new shape on the canvas
 function newShape(x, y){
-    //Draw the Circle
+    //Draw the Shape
     var group = d3.select("svg").append("g").attr("id", "group"+numShapes);
     var shape = group.append(shapeType)
                   .attr("id", numShapes)
@@ -34,7 +35,7 @@ function newShape(x, y){
                   .attr("width", radius)
                   .attr("height", radius)
                   .classed("shape", true)
-                  .classed(shapeType, true)
+                  .classed(shapeType, true);
 
     //Set color based on the current palette
     setColor(shape);
@@ -42,7 +43,7 @@ function newShape(x, y){
     //Add Event Listeners
     shape.on('mousedown', mouseDownShape);
     shape.on('dblclick', dblClickShape)
-         .on("mouseup", stopShape)
+         .on("mouseup", stopShape);
     
     //Place the shape on the canvas around the mouse tip
     growShape(shape, x, y);
@@ -51,26 +52,22 @@ function newShape(x, y){
 
 //Grow the new shape. Continues until interval cancelled
 function growShape(shape, x, y) {
-    var radius = shape.attr("r")
+    var radius = shape.attr("r");
     setCoords(shape, x, y);
     interval = setInterval(grow, 15);
     //Increment size and nudge position each interval
     function grow() {
         radius++;
         shape.attr("width", radius);
-        shape.attr("height", radius)
+        shape.attr("height", radius);
         shape.attr("r", radius);
-        x -= 0.5;
-        y -= 0.5;
+        //This keeps our original center point as the center of new rectangles.
         if (shapeType == "rect") {
-            setCoords(shape,x,y)
+            x -= 0.5;
+            y -= 0.5;
+            setCoords(shape,x,y);
         }
     }
-}
-
-//Clears active motion
-function stopShape() {
-    clearInterval(interval);
 }
 
 //Positions the shape at the given coordinates
@@ -79,7 +76,7 @@ function setCoords(shape, x, y) {
     var group = d3.select("#group" + shape.attr('id'));
     group.attr("transform", "translate("+(x)+','+(y)+")");
     shape.attr("diffX", x)
-         .attr("diffY", y)
+         .attr("diffY", y);
 }
 
 //Sets the color to the RGB sliders on the given shape 
@@ -87,18 +84,18 @@ function setColor(shape) {
     var red = $('#red').val();
     var green = $('#green').val();
     var blue = $('#blue').val();
-    var rgb = 'rgb('+red+','+green+','+blue+')'
-    try {
-        shape.style("fill", rgb);
+    var rgb = 'rgb('+red+','+green+','+blue+')';
+    //Two different methods of setting color because palette is not in the SVG
+    if (shape.id == "palette") {
+        shape.setAttribute('style',"background-color: " + rgb);  
     }
-    catch (err) {
-        shape.setAttribute('style',"background-color: " + rgb)
+    else {
+        shape.style("fill", rgb);
     }
 }
 
 //Sets the shape to the mouse movement until mouseup
 function moveShape(shape) {
-    selectShape(shape)
     //This is the current position of the mouse. We move the shape relative to movement from this point
     var startX = mouseX - shape.attr('diffX');
     var startY = mouseY - shape.attr('diffY');
@@ -111,11 +108,13 @@ function moveShape(shape) {
 }
 
 /*************BUTTONS AND HOVERS******************************/
-//Deletes the currently selected object
+//Deletes the currently selected shape and group
 function removeSelected(){
-    d3.select('#group' + selectedShape.attr('id')).remove()
+    d3.select('#group' + selectedShape.attr('id')).remove();
+    selectedShape = null;
 }
 
+//Removes the given shape and group
 function removeShape(shape) {
     d3.select('#group' + shape.attr('id')).remove();
 }
@@ -124,6 +123,7 @@ function removeShape(shape) {
 function clearShapes() {
     numShapes = 0;
     d3.selectAll("g").remove();
+    selectedShape = null;
 }
 
 //Selects the clicked shape
@@ -142,7 +142,7 @@ function deselectShape() {
     if (selectedShape !== null) {
         selectedShape.classed("selected-shape", false);
         selectedShape = null;
-        d3.selectAll(".pull").remove()
+        d3.selectAll(".pull").remove();
     }
 }
 
@@ -154,50 +154,55 @@ function setPalette() {
     }
 }
 
+//Adds corner pull circle, for resizing
 function addPull(shape, left, top) {
-    var r = parseInt(shape.attr("r"))
+    var r = parseInt(shape.attr("r"));
     
-    var groupId = '#group' + shape.attr('id')
+    var groupId = '#group' + shape.attr('id');
     pull = d3.select(groupId).append('circle')
              .attr("r", 10)
              .style("fill","blue")
              .style("stroke","black")
              .style("stroke-width",2)
              .classed("pull", true);
-    if (left) {pull.classed("left", true)};
-    if (top) {pull.classed("top", true)};
-    setPullCoords(shape, pull)
+    if (left) {pull.classed("left", true);}
+    if (top) {pull.classed("top", true);}
+    setPullCoords(shape, pull);
     pull.on('mouseover', stopEvent);
     pull.on('mousedown', mouseDownPull);
     pull.on('mouseup', stopShape);
 }
 
+//Sets the coordinates of the pull circle according to the shape.
 function setPullCoords(shape, pull) {
-    var x,y = x = 0;
+    var x = 0;
+    var y = 0;
     if (!pull.classed("left")) {
-        x = shape.attr('width')
+        x = shape.attr('width');
     }
     if (!pull.classed("top")) {
-        y = shape.attr('height')
+        y = shape.attr('height');
     }
     if (shape.classed('circle')) {
-        x = shape.attr('r')*Math.cos(Math.PI / 4)
-        y = shape.attr('r')*Math.sin(Math.PI / 4)
-        if(pull.classed("top")) {y = -y};
-        if(pull.classed("left")) {x = -x}
+        //Places the circle where the corner of an inscribed rectangle would be
+        //45 degrees => Math.PI radians 
+        x = shape.attr('r')*Math.cos(Math.PI / 4);
+        y = shape.attr('r')*Math.sin(Math.PI / 4);
+        if(pull.classed("top")) {y = -y;}
+        if(pull.classed("left")) {x = -x;}
     }
 
     pull.attr('cx',x)
-        .attr('cy',y)
+        .attr('cy',y);
 }
 
+//Resizes the shape based on mouse movement
 function resizeShape(group, pull) {
     group.on('mouseup', stopShape);
-    group.on('mousedown', stopShape)
+    group.on('mousedown', stopShape);
     var shape = group.select('.shape');
     var mouseStartX = mouseX;
     var mouseStartY = mouseY;
-    var pullId = pull.attr("id")
 
     var diffX = parseInt(shape.attr("diffX"));
     var diffY = parseInt(shape.attr("diffY"));
@@ -207,38 +212,49 @@ function resizeShape(group, pull) {
     var height = parseInt(shape.attr("height"));
 
     interval = setInterval(function() {
-        var newX = diffX;
-        var newY = diffY;
-        var newR = r;
-        var widthDiff = mouseX - mouseStartX;
-        var heightDiff = mouseY - mouseStartY;
-        if(pull.classed("top")) {
-            heightDiff = mouseStartY - mouseY;
-            newY = diffY - heightDiff
-        }
-        if (pull.classed("left")) {
-            widthDiff = mouseStartX - mouseX;
-            newX = diffX - widthDiff;
-        }
-        if (shape.classed("rect")) {
-            setCoords(shape, newX, newY);
-        }
-        rDiff = (heightDiff + widthDiff)
-        newR = r + rDiff
-        if(newR <= 0) {newR = 1}
-        shape.attr("r", newR)
+        resizeInterval(shape, mouseStartX, mouseStartY, diffX, 
+                       diffY, r, width, height);
+    }, 0.01);
+}
 
-        pulls = group.selectAll(".pull")[0];
-        for (var i = pulls.length - 1; i >= 0; i--) {
-            setPullCoords(shape,d3.select(pulls[i]))
-        }
-        newWidth = widthDiff + width
-        if (newWidth <= 0){ newWidth = 1};
-        newHeight = heightDiff + height;
-        if (newHeight <= 0) {newHeight = 1} 
+//Interval function to loop as the mouse drags the pull circle
+function resizeInterval(shape, mouseStartX, mouseStartY, diffX,
+                        diffY, r, width, height) {
+    var newX = diffX;
+    var newY = diffY;
+    var widthDiff = mouseX - mouseStartX;
+    var heightDiff = mouseY - mouseStartY;
 
-        shape.attr("width", newWidth);
-        shape.attr("height", newHeight);
-        
-    }, .01);
+    if(pull.classed("top")) {
+        heightDiff = -heightDiff;
+        newY = diffY - heightDiff;
+    }
+    if (pull.classed("left")) {
+        widthDiff = -widthDiff;
+        newX = diffX - widthDiff;
+    }
+    if (shape.classed("rect")) {
+        resizeRect(shape, widthDiff+width, heightDiff+height, newX, newY);
+    } else {
+        resizeCircle(shape, r+heightDiff+widthDiff);
+    }
+    
+    pulls = group.selectAll(".pull")[0];
+    for (var i = pulls.length - 1; i >= 0; i--) {
+        setPullCoords(shape,d3.select(pulls[i]));
+    } 
+}
+
+//Specifc resize instructions for a rectangle
+function resizeRect(shape, newWidth, newHeight, newX, newY){
+    if (newWidth <= 0){ newWidth = 1;}
+    if (newHeight <= 0) {newHeight = 1;} 
+    shape.attr("width", newWidth);
+    shape.attr("height", newHeight);
+    setCoords(shape, newX, newY);
+}
+//Specifc resize instructions for a circle
+function resizeCircle(shape, newR) {
+    if(newR <= 0) {newR = 1}
+    shape.attr("r", newR)
 }
