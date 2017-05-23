@@ -2,13 +2,13 @@
 layout: post
 title:  "Using the Django-Rest-Framework to Set Up an API"
 date:   2017-05-23 17:46:37 -0500
-categories: django
+categories: jekyll update
 ---
 
 {% highlight python %}
 def print_hi(name):
   print("Hi, #{name}")
-  
+end
 print_hi('Tom')
 #=> prints 'Hi, Tom' to STDOUT.
 {% endhighlight %}
