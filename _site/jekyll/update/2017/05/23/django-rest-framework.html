@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Using the Django-Rest-Framework to Set Up an API</title>
+  <meta name="description" content="In Django you can easily define your data schemas in a models.py file. After defining your models, you can apply them to your database by running “python man...">
+
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="canonical" href="http://localhost:4000/jekyll/update/2017/05/23/django-rest-framework.html">
+  <link rel="alternate" type="application/rss+xml" title="Michael Vasiliou" href="/feed.xml">
+  
+  
+</head>
+
+
+  <body>
+
+    <header class="site-header" role="banner">
+
+  <div class="wrapper">
+    
+    
+    <a class="site-title" href="/">Michael Vasiliou</a>
+  
+    
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+              <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+              <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger">
+          
+            
+            
+            <a class="page-link" href="/about/">About</a>
+            
+          
+            
+            
+          
+            
+            
+          
+            
+            
+          
+        </div>
+      </nav>
+    
+  </div>
+</header>
+
+
+    <main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">Using the Django-Rest-Framework to Set Up an API</h1>
+    <p class="post-meta">
+      <time datetime="2017-05-23T17:46:37-05:00" itemprop="datePublished">
+        
+        May 23, 2017
+      </time>
+      </p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p>In Django you can easily define your data schemas in a models.py file. After
+defining your models, you can apply them to your database by running 
+“python manage.py makemigrations” then running “python manage.py migrate.”</p>
+
+<p>Let’s say we’re working on an app to store information on vehicles. Then we might
+define a Vehicle class in our models.py file like so:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">class</span> <span class="nc">Employee</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">year</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">null</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
+    <span class="n">owner</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">null</span> <span class="o">=</span> <span class="bp">False</span><span class="p">,</span> <span class="n">max_length</span> <span class="o">=</span> <span class="mi">250</span><span class="p">)</span>
+    <span class="n">brand</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">null</span> <span class="o">=</span> <span class="bp">False</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">250</span><span class="p">)</span>    
+    <span class="n">model</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">null</span> <span class="o">=</span> <span class="bp">False</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">250</span><span class="p">)</span></code></pre></figure>
+
+<p>For the rest of this post, we’ll assume that we’re working off of this model, which
+is placed in a Django app called “api”.</p>
+
+<p>After that you can take your models anywhere in your webapp and filter on 
+specific attributes, create new instances or update old ones.</p>
+
+<p>Django also allows you to pass your data models to the front end, by adding
+an instance or queryset to your views:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">vehicles</span> <span class="o">=</span> <span class="n">Vehicle</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="nb">all</span><span class="p">()</span>
+    <span class="n">context</span> <span class="o">=</span> <span class="p">{</span><span class="s">'vehicles'</span><span class="p">:</span> <span class="n">vehicles</span><span class="p">}</span>
+    <span class="k">return</span> <span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s">'ui/index.html'</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span></code></pre></figure>
+
+<p>You can then access the passed variable from within your template. But what if 
+you’re not relying on the Django template system? Or what if you want to load 
+data without refreshing the page? While Django’s templating system is 
+easy to setup, it doesn’t have the flexibility to transfer data on the fly.</p>
+
+<p>One solution is to set-up a unique view to pass data via an AJAX call to a full
+page. Say we want to create a Vehicle object on the front-end by sending data to
+the back-end over AJAX. We might write a view like below:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">create_vehicle</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s">'POST'</span><span class="p">:</span>
+        <span class="n">vehicle</span> <span class="o">=</span> <span class="n">Vehicle</span><span class="p">()</span>
+        
+        <span class="n">vehicle</span><span class="o">.</span><span class="n">year</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">'year'</span><span class="p">)</span>
+        <span class="n">vehicle</span><span class="o">.</span><span class="n">owner</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">'owner'</span><span class="p">)</span>
+        <span class="n">vehicle</span><span class="o">.</span><span class="n">brand</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">'brand'</span><span class="p">)</span>
+        <span class="n">vehicle</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">'model'</span><span class="p">)</span>
+        <span class="n">vehicle</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+        <span class="n">response_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">response_data</span><span class="p">[</span><span class="s">'vehicle_id'</span><span class="p">]</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">pk</span>
+        <span class="n">response_data</span><span class="p">[</span><span class="s">'owner'</span><span class="p">]</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">owner</span>
+        <span class="n">response_data</span><span class="p">[</span><span class="s">'brand'</span><span class="p">]</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">brand</span>
+        <span class="n">response_data</span><span class="p">[</span><span class="s">'model'</span><span class="p">]</span> <span class="o">=</span> <span class="n">vehicle</span><span class="o">.</span><span class="n">model</span>
+
+        <span class="k">return</span> <span class="n">JsonResponse</span><span class="p">(</span>
+            <span class="n">response_data</span><span class="p">,</span>
+            <span class="n">content_type</span><span class="o">=</span><span class="s">"application/json"</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">JsonResponse</span><span class="p">(</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s">""</span><span class="p">:</span> <span class="s">""</span><span class="p">}),</span>
+            <span class="n">content_type</span><span class="o">=</span><span class="s">"application/json"</span>
+        <span class="p">)</span></code></pre></figure>
+
+<p>Then, we need to define a place to access this view in our urls.py file:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">django.conf.urls</span> <span class="kn">import</span> <span class="n">url</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">views</span>
+
+<span class="n">urlpatterns</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">url</span><span class="p">(</span><span class="s">r'^create_vehicle/$'</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">create_vehicle</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="s">'create'</span><span class="p">),</span>
+    <span class="n">url</span><span class="p">(</span><span class="s">r'^update_vehicle/(?P&lt;vehicle_id&gt;[-</span><span class="err">\</span><span class="s">w]+)/$'</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">update_vehicle</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="s">'update'</span><span class="p">),</span>
+    <span class="n">url</span><span class="p">(</span><span class="s">r'^delete_vehicle/(?P&lt;vehicle_id&gt;[-</span><span class="err">\</span><span class="s">w]+)/$'</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">delete_vehicle</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="s">'delete'</span><span class="p">),</span>
+<span class="p">]</span></code></pre></figure>
+
+<p>But this is….messy and repetive code. We’d need to write a similar view for each
+type of data and for other actions, like deleting or updating. Then, we’d need
+to define another URL for each one of <strong>those</strong> views. Messy and repetitive code
+is just not beautiful or pythonic, so we want to avoid it as much as possible.</p>
+
+<p>Enter the Django REST Framework. This library allows us our front-end application to
+call out to defined urls on our backend and seamlessly receive data back in JSON format.
+Best of all, we don’t need to define individual URLs or views for specific actions.
+Instead, we write a single view for each model in our data set and only need two
+urls. All the heavy lifting of figuring out how to respond to our request is 
+handled by the framework!</p>
+
+<p>Let’s start by installing the package from the command line:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>$ pip install djangorestframework
+</code></pre>
+</div>
+
+<p>You also need to add the package to your <code class="highlighter-rouge">INSTALLED_PACKAGES</code> in your settings.py
+file.</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">INSTALLED_APPS</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="o">...</span>
+    <span class="s">'rest_framework'</span><span class="p">,</span>
+<span class="p">)</span></code></pre></figure>
+
+<p>This would also be a great time to add <code class="highlighter-rouge">djangorestframework</code> to your requirements.txt 
+file!</p>
+
+<p>The nice thing about the Django REST Framework is we don’t need to change how our
+data is stored at all, so write your models.py file as you normally would and we never
+touch it again!</p>
+
+<p>We are going to create a new type of file though, called serializers.py. This file
+will define the fields that we expose to the front-end of the application through our API
+and the types of actions that we can then execute. This file belongs in the 
+same app directory as the matching models.py file. First, we’ll start
+by importing our models and some modules from the <code class="highlighter-rouge">rest_framework</code>:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="n">Employee</span><span class="p">,</span> <span class="n">Office</span><span class="p">,</span> <span class="n">Department</span><span class="p">,</span> <span class="n">TradingTeam</span>
+<span class="kn">from</span> <span class="nn">rest_framework</span> <span class="kn">import</span> <span class="n">serializers</span></code></pre></figure>
+
+<p>Then, we’ll write a serializer class for each model in our data structure. We
+use the <code class="highlighter-rouge">serializers.HyperlinkedModelSerializer</code> as a parent class as it allows
+us to include data from connected models within the JSON output of the API.</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">class</span> <span class="nc">VehicleSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">HyperlinkedModelSerializer</span><span class="p">):</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">ReadOnlyField</span><span class="p">()</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Vehicle</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">(</span><span class="s">'id'</span><span class="p">,</span> <span class="s">'owner'</span><span class="p">,</span> <span class="s">'brand'</span><span class="p">,</span> <span class="s">'model'</span><span class="p">,</span> <span class="s">'year'</span><span class="p">)</span></code></pre></figure>
+
+<p>In the fields section at the bottom, we list each attribute from the model we want
+to include in our output to the front-end. What if we wanted to exclude an attribute?
+Feel free! If we wanted to the <code class="highlighter-rouge">owner</code> field to be hidden from the front-end, we
+could just leave it out of our fields section and it never gets passed.</p>
+
+<p>What’s with the <code class="highlighter-rouge">id = serializers.ReadOnlyField()</code> line? This line allows us to pass
+along the primary key of the model to the front-end, but does not allow changes
+to be made the primary key of a model. We could also block reads to the front-end
+for other fields as well if we liked.</p>
+
+<p>What if we had a relationship between this instance and another? Let’s say that
+the <code class="highlighter-rouge">owner</code> field is actually a <code class="highlighter-rouge">ForeignKey</code> to an Owner model. Let’s define our
+Owner class below:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">class</span> <span class="nc">Owner</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">first_name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">null</span> <span class="o">=</span> <span class="bp">False</span><span class="p">,</span> <span class="n">max_length</span> <span class="o">=</span> <span class="mi">250</span><span class="p">)</span>
+    <span class="n">last_name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">null</span> <span class="o">=</span> <span class="bp">False</span><span class="p">,</span> <span class="n">max_length</span> <span class="o">=</span> <span class="mi">250</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">first_name</span> <span class="o">+</span> <span class="s">' '</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_name</span></code></pre></figure>
+
+<p>Then, we could define a second serializer for the Owner class in our serializers.py
+file and <em>then</em> include a reference to the other serializer in our Vehicle class. 
+Let’s update our serializers.py file:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">class</span> <span class="nc">OwnerSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">HyperlinkedModelSerializer</span><span class="p">):</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">ReadOnlyField</span><span class="p">()</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Owner</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">(</span><span class="s">'id'</span><span class="p">,</span> <span class="s">'first_name'</span><span class="p">,</span> <span class="s">'last_name'</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">VehicleSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">HyperlinkedModelSerializer</span><span class="p">):</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">ReadOnlyField</span><span class="p">()</span>
+    <span class="n">owner</span> <span class="o">=</span> <span class="n">OwnerSerializer</span><span class="p">(</span><span class="n">read_only</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">owner_id</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">PrimaryKeyRelatedField</span><span class="p">(</span>
+        <span class="n">queryset</span><span class="o">=</span><span class="n">Owner</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="nb">all</span><span class="p">(),</span> <span class="n">source</span><span class="o">=</span><span class="s">'owner'</span><span class="p">,</span> <span class="n">write_only</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">FirmPeriod</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">(</span><span class="s">'id'</span><span class="p">,</span> <span class="s">'owner'</span><span class="p">,</span> <span class="s">'year'</span><span class="p">,</span> <span class="s">'brand'</span><span class="p">,</span> <span class="s">'model'</span><span class="p">,)</span></code></pre></figure>
+
+<p>Something to take note of here: we defined fields for the owner TWICE! Why?
+The first one <code class="highlighter-rouge">owner</code> is read-only and delivers all of the information about
+the Owner nested with in the JSON output of the Vehicle. The <code class="highlighter-rouge">owner_id</code> field never
+appears in the output, it’s just for receving requests. Since <code class="highlighter-rouge">owner</code> is delivering
+all of the information about the Owner, it also expects all of that information
+back when we make updates. But we don’t necessarily want to do that: we just want to 
+update the <em>key</em> referenced in Vehicle to a different Owner. That’s what <code class="highlighter-rouge">owner_id</code>
+does, it just looks for an id, not the full information about an Owner.</p>
+
+<p>If we <strong>don’t</strong> want to send the full information on the Owner in each output,
+then we can use just one field to send just the primary key like so:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">class</span> <span class="nc">VehicleSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">ModelSerializer</span><span class="p">):</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">ReadOnlyField</span><span class="p">()</span>
+    <span class="n">owner</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">PrimaryKeyRelatedField</span><span class="p">(</span>
+        <span class="n">queryset</span><span class="o">=</span><span class="n">Owner</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="nb">all</span><span class="p">(),</span> <span class="n">source</span><span class="o">=</span><span class="s">'owner'</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">FirmPeriod</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">(</span><span class="s">'id'</span><span class="p">,</span> <span class="s">'owner'</span><span class="p">,</span> <span class="s">'year'</span><span class="p">,</span> <span class="s">'brand'</span><span class="p">,</span> <span class="s">'model'</span><span class="p">,)</span></code></pre></figure>
+
+<p>Note that we changed <code class="highlighter-rouge">HyperlinkedModelSerializer</code>, to just <code class="highlighter-rouge">ModelSerializer</code>.
+We didn’t have to do that, it would have worked just fine with the hyperlinked version,
+but since we aren’t nesting our models, we really only need the <code class="highlighter-rouge">ModelSerializer</code>
+parent class.</p>
+
+<p>Some, quick final points before we move on:</p>
+
+<ul>
+  <li>
+    <p>Make sure you import all of the models you use at the top of serializers.py!</p>
+  </li>
+  <li>If you are nesting relationships between models in your output, make sure that
+  you don’t nest a pair of models within each other! This might happen if we wanted
+  the Owner class to list its Vehicles and the Vehicle class to list its Owners.
+  If we try to do this, we end nest objects recursively until our code crashes!</li>
+  <li>Also be sure to order your serializers correctly! If we place a nested serializer
+  below a class where it is nested, Django will think you haven’t defined it and
+  won’t know where to find. Here, we placed our Owner serializer above the Vehicle
+  serializer, because the Vehicle Serializer needs to know where the OwnerSerializer is 
+  in order to use it.</li>
+</ul>
+
+<p>Awesome! Now we’ve defined all of the information that we expect from our inputs
+and outputs! But we still haven’t defined <em>where</em> we can access and update information:
+we need an endpoint.</p>
+
+<p>Let’s head back to our views.py file to do just that. There’s multiple ways to 
+define our views here, but the best way to get the Django REST Framework to do
+the heavy lifting is to use a <code class="highlighter-rouge">ModelViewSet</code>. This defines generic, create, retrieve,
+update and delete functions for us and we only need to deviate if we want more specific
+behavior.</p>
+
+<p>First off, we import the models we use <strong>and</strong> the serializers we use. We also
+import the <code class="highlighter-rouge">viewsets</code> module from <code class="highlighter-rouge">rest_framework</code> to use as a parent class:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="n">Owner</span><span class="p">,</span> <span class="n">Vehicle</span>
+<span class="kn">from</span> <span class="nn">.serializers</span> <span class="kn">import</span> <span class="n">OwnerSerializer</span><span class="p">,</span> <span class="n">VehicleSerializer</span>
+
+<span class="kn">from</span> <span class="nn">rest_framework</span> <span class="kn">import</span> <span class="n">viewsets</span></code></pre></figure>
+
+<p>Then we define a <em>class</em> for each view. Django tends to start people off by using
+function-based views, but we can also use class-based views too! There’s a lot of advantages
+to doing so, as they allow us to define generic sets of behavior and then extend them,
+which leads to less repeated code. The Django documentation does a great job of explaining
+class-based views, so I’ll let them take it away <a href="https://docs.djangoproject.com/en/1.11/topics/class-based-views/intro/">here</a>.</p>
+
+<p>Here’s the code we’ll used for our first class-based view:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="n">Owner</span><span class="p">,</span> <span class="n">Vehicle</span>
+<span class="kn">from</span> <span class="nn">.serializers</span> <span class="kn">import</span> <span class="n">OwnerSerializer</span><span class="p">,</span> <span class="n">VehicleSerializer</span>
+
+<span class="kn">from</span> <span class="nn">rest_framework</span> <span class="kn">import</span> <span class="n">viewsets</span>
+
+<span class="k">class</span> <span class="nc">OwnerViewSet</span><span class="p">(</span><span class="n">viewsets</span><span class="o">.</span><span class="n">ModelViewSet</span><span class="p">):</span>
+    <span class="n">queryset</span> <span class="o">=</span> <span class="n">Vehicle</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="nb">all</span><span class="p">()</span>
+    <span class="n">serializer_class</span> <span class="o">=</span> <span class="n">VehicleSerializer</span>
+
+<span class="k">class</span> <span class="nc">VehicleViewSet</span><span class="p">(</span><span class="n">viewsets</span><span class="o">.</span><span class="n">ModelViewSet</span><span class="p">):</span>
+    <span class="n">queryset</span> <span class="o">=</span> <span class="n">Vehicle</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="nb">all</span><span class="p">()</span>
+    <span class="n">serializer_class</span> <span class="o">=</span> <span class="n">VehicleSerializer</span></code></pre></figure>
+
+<p>This is super simple: we define our queryset and then we define the serializer to
+export the data with, and we’re done! We could go a little further though and filter
+our queryset based on some parameter. Let’s say we have added an <code class="highlighter-rouge">active</code> field in our
+Vehicle model and we only want our output to include active Vehicles. Then, we
+write a <code class="highlighter-rouge">get_queryset</code> function at the bottom of our class:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">class</span> <span class="nc">VehicleViewSet</span><span class="p">(</span><span class="n">viewsets</span><span class="o">.</span><span class="n">ModelViewSet</span><span class="p">):</span>
+    <span class="n">queryset</span> <span class="o">=</span> <span class="n">Vehicle</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="nb">all</span><span class="p">()</span>
+    <span class="n">serializer_class</span> <span class="o">=</span> <span class="n">VehicleSerializer</span>
+
+    <span class="k">def</span> <span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="s">"""
+        This view should return only active Vehicles.
+        """</span>
+        <span class="n">active_vehicles</span> <span class="o">=</span> <span class="n">Vehicle</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="nb">filter</span><span class="p">(</span><span class="n">active</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">active_vehicles</span></code></pre></figure>
+
+<p>Note that even though we define the <code class="highlighter-rouge">get_queryset</code> function, the framework still
+expects us to include the <code class="highlighter-rouge">queryset</code> above as well in the main part of the class.
+Be sure to do both!</p>
+
+<p>We’re still missing another component: the actual URL! Let’s head on over to urls.py.</p>
+
+<p>Here we’re going to register our views with a router object, in this case a <code class="highlighter-rouge">DefaultRouter</code>.
+Then, we include the router in our usual <code class="highlighter-rouge">url_patterns</code> list. Check it out:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">views</span>
+<span class="kn">from</span> <span class="nn">django.conf.urls</span> <span class="kn">import</span> <span class="n">url</span><span class="p">,</span> <span class="n">include</span>
+<span class="kn">from</span> <span class="nn">rest_framework.routers</span> <span class="kn">import</span> <span class="n">DefaultRouter</span>
+
+<span class="n">router</span> <span class="o">=</span> <span class="n">DefaultRouter</span><span class="p">()</span>
+<span class="n">router</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s">r'vehicles'</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">VehicleViewSet</span><span class="p">)</span>
+<span class="n">router</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s">r'owners'</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">OwnerViewSet</span><span class="p">)</span>
+
+<span class="n">urlpatterns</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">url</span><span class="p">(</span><span class="s">r'^'</span><span class="p">,</span> <span class="n">include</span><span class="p">(</span><span class="n">router</span><span class="o">.</span><span class="n">urls</span><span class="p">)),</span>
+<span class="p">]</span></code></pre></figure>
+
+<p>Now, any time we want to access our vehicle data, we can point to our ‘/vehicles/’
+URL and get exactly the information we want with a GET request. If we append a 
+primary key to our URL, like ‘/vehicles/7’, then we’ll be able to see data on 
+only that specific Vehicle or change it with a PUT, POST or DELETE request.</p>
+
+<p>Great! Let’s look at what we accomplished:</p>
+
+<ul>
+  <li>We defined the fields we expect from our inputs and outputs in serializers.py</li>
+  <li>We defined the data and querysets we pass to our serializers in views.py</li>
+  <li>We defined the end point for receiving and sending data to and from our backend in urls.py</li>
+  <li>We kept our data stored in exactly the same way in models.py!</li>
+</ul>
+
+<p>There’s also a ton of other options and cool ways of outputting our data, like pagination,
+multiple serializers per model, and a UI for accessing you API. If you’re interested in reading
+more, I suggest you check out the <a href="http://www.django-rest-framework.org/">documentation</a> 
+for the Django Rest Framework!</p>
+
+
+  </div>
+
+  
+</article>
+
+      </div>
+    </main>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Michael Vasiliou</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>
+            
+              Michael Vasiliou
+            
+            </li>
+            
+            <li><a href="mailto:mvasiliou94@gmail.com">mvasiliou94@gmail.com</a></li>
+            
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+            <a href="https://github.com/mvasiliou"><span class="icon icon--github"><svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/></svg>
+</span><span class="username">mvasiliou</span></a>
+
+          </li>
+          
+
+          
+          <li>
+            <a href="https://twitter.com/mikejv"><span class="icon icon--twitter"><svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M15.969,3.058c-0.586,0.26-1.217,0.436-1.878,0.515c0.675-0.405,1.194-1.045,1.438-1.809c-0.632,0.375-1.332,0.647-2.076,0.793c-0.596-0.636-1.446-1.033-2.387-1.033c-1.806,0-3.27,1.464-3.27,3.27 c0,0.256,0.029,0.506,0.085,0.745C5.163,5.404,2.753,4.102,1.14,2.124C0.859,2.607,0.698,3.168,0.698,3.767 c0,1.134,0.577,2.135,1.455,2.722C1.616,6.472,1.112,6.325,0.671,6.08c0,0.014,0,0.027,0,0.041c0,1.584,1.127,2.906,2.623,3.206 C3.02,9.402,2.731,9.442,2.433,9.442c-0.211,0-0.416-0.021-0.615-0.059c0.416,1.299,1.624,2.245,3.055,2.271 c-1.119,0.877-2.529,1.4-4.061,1.4c-0.264,0-0.524-0.015-0.78-0.046c1.447,0.928,3.166,1.469,5.013,1.469 c6.015,0,9.304-4.983,9.304-9.304c0-0.142-0.003-0.283-0.009-0.423C14.976,4.29,15.531,3.714,15.969,3.058z"/></svg>
+</span><span class="username">mikejv</span></a>
+
+          </li>
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p></p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>
